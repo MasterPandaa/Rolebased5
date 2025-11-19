@@ -5,7 +5,6 @@ from typing import Tuple
 
 import pygame
 
-
 # --- Configuration ---
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -62,7 +61,8 @@ class Paddle:
         if down:
             dy += self.speed * dt
         self.rect.centery = max(
-            PADDLE_HEIGHT // 2, min(SCREEN_HEIGHT - PADDLE_HEIGHT // 2, int(self.rect.centery + dy))
+            PADDLE_HEIGHT // 2,
+            min(SCREEN_HEIGHT - PADDLE_HEIGHT // 2, int(self.rect.centery + dy)),
         )
 
     def update_ai(self, dt: float, ball: "Ball") -> None:
@@ -76,11 +76,22 @@ class Paddle:
             # If ball moving toward AI, lead slightly, else drift back to center
             if ball.velocity[0] > 0:
                 # Estimate where ball will be when it reaches our x
-                time_to_reach = ((self.rect.left - ball.rect.right) / ball.velocity[0]) if ball.velocity[0] != 0 else 0
-                predicted_y = ball.rect.centery + ball.velocity[1] * time_to_reach * AI_LOOKAHEAD_FACTOR
+                time_to_reach = (
+                    ((self.rect.left - ball.rect.right) / ball.velocity[0])
+                    if ball.velocity[0] != 0
+                    else 0
+                )
+                predicted_y = (
+                    ball.rect.centery
+                    + ball.velocity[1] * time_to_reach * AI_LOOKAHEAD_FACTOR
+                )
                 # Reflect off top/bottom in prediction to avoid over-shoot
-                predicted_y = reflect_off_bounds(predicted_y, BALL_SIZE // 2, SCREEN_HEIGHT - BALL_SIZE // 2)
-                self._aim_error = self._rand_aim_error() * min(1.0, abs(ball.velocity[0]) / BALL_SPEED_MAX)
+                predicted_y = reflect_off_bounds(
+                    predicted_y, BALL_SIZE // 2, SCREEN_HEIGHT - BALL_SIZE // 2
+                )
+                self._aim_error = self._rand_aim_error() * min(
+                    1.0, abs(ball.velocity[0]) / BALL_SPEED_MAX
+                )
                 self._target_y = float(predicted_y + self._aim_error)
             else:
                 # Ball moving away: go back toward center with slight randomness
@@ -115,7 +126,9 @@ class Ball:
         now = pygame.time.get_ticks()
         if self.velocity.length_squared() == 0 and now >= self._serve_time:
             angle = random.uniform(-0.35, 0.35)  # slightly off horizontal
-            self.velocity.x = math.copysign(self.speed * math.cos(angle), self._serve_dir)
+            self.velocity.x = math.copysign(
+                self.speed * math.cos(angle), self._serve_dir
+            )
             self.velocity.y = self.speed * math.sin(angle)
 
     def reset(self, scorer_dir: int) -> None:
@@ -207,7 +220,9 @@ def draw_center_net(surface: pygame.Surface) -> None:
         pygame.draw.rect(surface, DIM, pygame.Rect(x, y, 4, dash_h), border_radius=2)
 
 
-def render_score(surface: pygame.Surface, font: pygame.font.Font, left: int, right: int) -> None:
+def render_score(
+    surface: pygame.Surface, font: pygame.font.Font, left: int, right: int
+) -> None:
     left_surf = font.render(str(left), True, WHITE)
     right_surf = font.render(str(right), True, WHITE)
     surface.blit(left_surf, (SCREEN_WIDTH * 0.25 - left_surf.get_width() / 2, 24))
@@ -229,7 +244,9 @@ def main() -> None:
         small_font = pygame.font.Font(None, 20)
 
     # Create objects
-    left_paddle = Paddle(PADDLE_MARGIN, SCREEN_HEIGHT // 2 - PADDLE_HEIGHT // 2, is_ai=False)
+    left_paddle = Paddle(
+        PADDLE_MARGIN, SCREEN_HEIGHT // 2 - PADDLE_HEIGHT // 2, is_ai=False
+    )
     right_paddle = Paddle(
         SCREEN_WIDTH - PADDLE_MARGIN - PADDLE_WIDTH,
         SCREEN_HEIGHT // 2 - PADDLE_HEIGHT // 2,
@@ -286,7 +303,10 @@ def main() -> None:
             msg = font.render(f"{winner} win! Press ESC to exit.", True, ACCENT)
             screen.blit(
                 msg,
-                (SCREEN_WIDTH // 2 - msg.get_width() // 2, SCREEN_HEIGHT // 2 - msg.get_height() // 2),
+                (
+                    SCREEN_WIDTH // 2 - msg.get_width() // 2,
+                    SCREEN_HEIGHT // 2 - msg.get_height() // 2,
+                ),
             )
             # Freeze ball and paddles when game ended
             ball.velocity.xy = (0, 0)
